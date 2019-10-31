@@ -83,23 +83,12 @@ class CycleFinder(object):
         row, col = location
         letter = self.cells[row][col]
 
+        # check top, bottom, left, and right neighbors
         neighbors = []
-        top = (row-1, col)
-        bot = (row+1, col)
-        left = (row, col-1)
-        right = (row, col+1)
-        if self.in_bounds(top):
-            if self.cells[top[0]][top[1]] == letter:
-                neighbors.append(top)
-        if self.in_bounds(bot):
-            if self.cells[bot[0]][bot[1]] == letter:
-                neighbors.append(bot)
-        if self.in_bounds(left):
-            if self.cells[left[0]][left[1]] == letter:
-                neighbors.append(left)
-        if self.in_bounds(right):
-            if self.cells[right[0]][right[1]] == letter:
-                neighbors.append(right)
+        for (x, y) in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+            if self.in_bounds((row+x, col+y)):
+                if self.cells[row+x][col+y] == letter:
+                    neighbors.append((row+x, col+y))
 
         return neighbors
 
