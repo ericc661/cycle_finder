@@ -6,13 +6,15 @@ and the last cell is the same as the first. To be adjacent is 4-directional, not
 including diagonals. The minimum cycle is a 'square' of length 4.
 '''
 import sys
-
+from queue import Queue
 
 class CycleFinder(object):
 
     # read in matrix from input and store as member variable
     def __init__(self, file):
         self.cells = [] # to store the matrix
+        self.untouched = [] # stores coordinates we have not yet visited
+        self.visited = {} # dictionary stores (visited: prev)
 
         try:
             # read in file, ensure valid dimensions
@@ -29,6 +31,44 @@ class CycleFinder(object):
         except FileNotFoundError:
             print("Invalid file name '{0}', exiting".format(file))
             sys.exit()
+
+    '''
+    summary: finds if there is a cycle in the matrix
+    requires: nothing
+    effects: returns true/false.
+    '''
+    def find_cycle(self):
+
+        # add all coordinates to untouched list
+        for i in range(len(self.cells)):
+            for j in range(len(self.cells[0])):
+                self.untouched.append((i, j))
+
+        # while there is a vertex we haven't reached yet
+        while self.untouched:
+            start = self.untouched.pop() # pick one such vertex & remove from untouched
+            q = [] # init queue for this connected region
+            self.visited[start] = None # there is no prev for a start of connected region
+            q.append((start, None))
+
+            # BFS over this connected region
+            while q:
+                v, prev = q.pop(0)
+                neighbors = self.get_neighbors(v)
+                for u in neighbors: #look @ every neighbor of v
+                    # cycle found if neighbor already visited and isn't
+                    #   this node's previous node
+                    if (u in self.visited) and (u != prev):
+                        return True
+                    elif not u in self.visited:
+                        # new node: add to visited, remove from untouched,
+                        #   add to queue
+                        self.visited[u] = v
+                        self.untouched.remove(u)
+                        q.append((u, v))
+        # here: traversed entire graph (all connected regions) without finding cycle
+        return False
+
 
     '''
     summary: gets the neighbors of the location of a cell
@@ -85,6 +125,7 @@ def main():
         print('Correct usage: python cycle_finder.py filename')
         sys.exit()
     cf = CycleFinder(sys.argv[1])
+    print(cf.find_cycle())
 
 if __name__ == '__main__':
     main()
